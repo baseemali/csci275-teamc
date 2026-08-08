@@ -5,6 +5,7 @@ const cors = require('cors');
 // Import Routes (Only Team C routes - No Auth/Login)
 const vendorRoutes = require('./routes/vendorRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(express.json());
 // Mount Routes
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Health Check Route
 app.get('/', (req, res) => {
