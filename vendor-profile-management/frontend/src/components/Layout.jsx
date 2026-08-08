@@ -82,7 +82,7 @@ export default function Layout() {
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/vendor-profile', label: 'My Profile', icon: User },
     { path: '/restaurant', label: 'My Restaurants', icon: UtensilsCrossed },
-    { path: '/reviews', label: 'Manage Reviews', icon: MessageSquare },
+    { path: '/reviews', label: 'Manage Reviews', icon: MessageSquare }, // ADDED THIS LINE
     { path: '/verification', label: 'Verification', icon: FileText },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];

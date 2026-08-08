@@ -5,11 +5,18 @@ const prisma = new PrismaClient();
 
 router.get('/', async (req, res) => {
   try {
+    const { restaurantId } = req.query; // Get restaurantId from URL
+
+    // Build the where clause dynamically
+    const whereClause = restaurantId ? { restaurantId } : {};
+
     const reviews = await prisma.review.findMany({
+      where: whereClause, // Apply filter if restaurantId is provided
       include: {
         response: true,
         flags: true,
-        user: { select: { name: true, email: true } }
+        user: { select: { name: true, email: true } },
+        restaurant: { select: { name: true } } // Include restaurant name
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -70,4 +77,31 @@ router.post('/:reviewId/flag', async (req, res) => {
   }
 });
 
+// PUT: Edit a reply
+router.put('/replies/:replyId', async (req, res) => {
+  try {
+    const { replyId } = req.params;
+    const { responseText } = req.body;
+    const updatedResponse = await prisma.reviewResponse.update({
+      where: { id: replyId },
+      data: { responseText }
+    });
+    res.json(updatedResponse);
+  } catch (error) {
+    console.error('Edit reply error:', error);
+    res.status(500).json({ error: 'Failed to update reply' });
+  }
+});
+
+// DELETE: Delete a reply
+router.delete('/replies/:replyId', async (req, res) => {
+  try {
+    const { replyId } = req.params;
+    await prisma.reviewResponse.delete({ where: { id: replyId } });
+    res.json({ success: true, message: 'Reply deleted successfully' });
+  } catch (error) {
+    console.error('Delete reply error:', error);
+    res.status(500).json({ error: 'Failed to delete reply' });
+  }
+});
 module.exports = router;
