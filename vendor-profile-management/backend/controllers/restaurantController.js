@@ -1,6 +1,10 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// Canadian postal code validation: A1A 1A1 (space optional)
+const CANADA_POSTAL_REGEX = /^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z][ ]?\d[ABCEGHJ-NPRSTV-Z]\d$/i;
+const isValidCanadianPostalCode = (postal) => !!postal && CANADA_POSTAL_REGEX.test(postal.trim());
+
 exports.createRestaurant = async (req, res) => {
   try {
     console.log("📥 Received restaurant data from frontend:", req.body);
@@ -10,6 +14,19 @@ exports.createRestaurant = async (req, res) => {
     if (!vendorId || !name || !street || !city || !zipcode) {
       console.log("⚠️ Validation failed: Missing required fields");
       return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    if (!isValidCanadianPostalCode(zipcode)) {
+      console.log("⚠️ Invalid postal code:", zipcode);
+      return res.status(400).json({
+        error: "Invalid Canadian postal code. Expected format: A1A 1A1 (e.g., V6B 5K8)"
+      });
+    }
+
+    if (zipcode && !isValidCanadianPostalCode(zipcode)) {
+      return res.status(400).json({
+        error: "Invalid Canadian postal code. Expected format: A1A 1A1"
+      });
     }
 
     // --- NEW: Duplicate Detection Check ---
@@ -62,12 +79,37 @@ exports.getRestaurantProfile = async (req, res) => {
 
 exports.updateRestaurantProfile = async (req, res) => {
   try {
+    const { id } = req.params;
+    const { name, street, city, zipcode } = req.body;
+
+    // Duplicate Detection Check (excluding the current restaurant being edited)
+    if (name && street && city && zipcode) {
+      const existingRestaurant = await prisma.restaurant.findFirst({
+        where: {
+          name: { equals: name, mode: 'insensitive' },
+          street: { equals: street, mode: 'insensitive' },
+          city: { equals: city, mode: 'insensitive' },
+          zipcode: { equals: zipcode },
+          id: { not: id } // Ensure we don't flag the current restaurant as a duplicate of itself
+        }
+      });
+
+      if (existingRestaurant) {
+        return res.status(409).json({
+          error: "A restaurant with this name and address already exists.",
+          existingId: existingRestaurant.id
+        });
+      }
+    }
+
     const restaurant = await prisma.restaurant.update({
-      where: { id: req.params.id },
+      where: { id },
       data: req.body
     });
+    
     res.status(200).json(restaurant);
   } catch (error) {
+    console.error("❌ UPDATE ERROR:", error);
     res.status(500).json({ error: error.message });
   }
 };

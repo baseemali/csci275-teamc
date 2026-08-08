@@ -7,73 +7,59 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ==========================================
-// 1. AUTHENTICATION & USER MANAGEMENT
-// ==========================================
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  name      String
-  role      String   @default("VENDOR")
-  createdAt DateTime @default(now())
- 
-  vendorProfile Vendor?
+  id            String           @id @default(uuid())
+  email         String           @unique
+  password      String
+  name          String
+  role          String           @default("VENDOR")
+  createdAt     DateTime         @default(now())
   reviews       Review[]
-  responses     ReviewResponse[]
   flags         ReviewFlag[]
+  responses     ReviewResponse[]
+  vendorProfile Vendor?
 }
 
 model Vendor {
-  id                  String    @id @default(uuid())
-  userId              String    @unique
+  id                  String              @id @default(uuid())
+  userId              String              @unique
   businessName        String
-  description         String?   // NEW: Business description
-  businessPhone       String?   // NEW: Direct contact number
-  businessEmail       String?   // NEW: Official business email
-  website             String?   // NEW: Corporate website
-  registrationNumber  String?   // NEW: Business license/tax ID
-  registeredAddress   String?   // NEW: Legal headquarters address
-  profileCompletion   Int       @default(0) // NEW: Completion percentage
-  
-  verificationStatus  String    @default("UNVERIFIED")
-  notificationEnabled Boolean   @default(true)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  
-  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restaurants   Restaurant[]
-  notifications VendorNotification?
+  verificationStatus  String              @default("UNVERIFIED")
+  notificationEnabled Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  businessEmail       String?
+  businessPhone       String?
+  description         String?
+  profileCompletion   Int                 @default(0)
+  registeredAddress   String?
+  registrationNumber  String?
+  updatedAt           DateTime            @updatedAt
+  website             String?
+  restaurants         Restaurant[]
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications       VendorNotification?
 }
 
-// ==========================================
-// 2. RESTAURANT MANAGEMENT
-// ==========================================
 model Restaurant {
-  id          String   @id @default(uuid())
-  vendorId    String?  // Optional for unclaimed
-  name        String
-  description String?
-  
-  // Address split into 3 fields (No lat/long)
-  street      String
-  city        String
-  zipcode     String
-  
-  phone       String
-  email       String
-  cuisine     String
-  priceLevel  Int
-  
-  isClaimed   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  vendor          Vendor?                @relation(fields: [vendorId], references: [id], onDelete: SetNull)
-  hours           RestaurantHours[]
-  tags            RestaurantTag[]
-  verifications   BusinessVerification[]
-  reviews         Review[]
+  id            String                 @id @default(uuid())
+  vendorId      String?
+  name          String
+  description   String?
+  street        String
+  city          String
+  zipcode       String
+  phone         String
+  email         String
+  cuisine       String
+  priceLevel    Int
+  isClaimed     Boolean                @default(false)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  verifications BusinessVerification[]
+  vendor        Vendor?                @relation(fields: [vendorId], references: [id])
+  hours         RestaurantHours[]
+  tags          RestaurantTag[]
+  reviews       Review[]
 }
 
 model RestaurantHours {
@@ -102,50 +88,44 @@ model BusinessVerification {
 }
 
 model VendorNotification {
-  id           String   @id @default(uuid())
-  vendorId     String   @unique
-  emailAlerts  Boolean  @default(true)
-  reviewAlerts Boolean  @default(true)
-  vendor       Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  id           String  @id @default(uuid())
+  vendorId     String  @unique
+  emailAlerts  Boolean @default(true)
+  reviewAlerts Boolean @default(true)
+  vendor       Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 }
 
-// ==========================================
-// 3. REVIEW INTERACTION MANAGEMENT
-// ==========================================
 model Review {
-  id           String           @id @default(uuid())
+  id           String          @id @default(uuid())
   restaurantId String
   userId       String
   rating       Int
-  comment      String           @db.Text
-  createdAt    DateTime         @default(now())
- 
-  restaurant   Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  response     ReviewResponse?
+  comment      String
+  createdAt    DateTime        @default(now())
+  restaurant   Restaurant      @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   flags        ReviewFlag[]
+  response     ReviewResponse?
 }
 
 model ReviewResponse {
   id           String   @id @default(uuid())
   reviewId     String   @unique
-  vendorId     String?  
-  responseText String   @db.Text
+  vendorId     String?
+  responseText String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
- 
   review       Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  vendor       User?    @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  vendor       User?    @relation(fields: [vendorId], references: [id])
 }
 
 model ReviewFlag {
   id        String   @id @default(uuid())
   reviewId  String
-  vendorId  String?  
+  vendorId  String?
   reason    String
   status    String   @default("PENDING")
   createdAt DateTime @default(now())
- 
   review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  vendor    User?    @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  vendor    User?    @relation(fields: [vendorId], references: [id])
 }
