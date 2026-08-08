@@ -385,7 +385,6 @@ Authorization: Bearer <your-jwt-token>
 - **Route:** `/reviews/replies/:replyId`
 - **Auth:** Required (Vendor/Admin)
 - **Description:** Permanently removes a vendor's reply to a review.
-- **Request Body:**
 - **Success Response:** `200 OK` with `{ "success": true, "message": "Reply deleted successfully" }`
 
 ---
