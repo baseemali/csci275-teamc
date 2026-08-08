@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, UtensilsCrossed, FileText, Settings, Bell, Search, LogOut, User } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, FileText, Settings, Bell, Search, LogOut, User, MessageSquare } from 'lucide-react';
 
 export default function Layout() {
   const location = useLocation();
@@ -24,6 +24,7 @@ export default function Layout() {
     { path: '/restaurant', label: 'My Restaurants', icon: UtensilsCrossed },
     { path: '/verification', label: 'Verification', icon: FileText },
     { path: '/settings', label: 'Settings', icon: Settings },
+    { path: '/reviews', label: 'Manage Reviews', icon: MessageSquare },
   ];
 
   return (
