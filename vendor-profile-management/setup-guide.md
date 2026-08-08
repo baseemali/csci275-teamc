@@ -24,7 +24,7 @@ This subsystem handles **Vendor Profile, Restaurant Management, and Review Inter
 - ✅ Vendor profile management with auto-calculated completion metrics.
 - ✅ Restaurant CRUD operations with strict duplicate prevention.
 - ✅ Business verification workflow.
-- ✅ - ✅ **Review Management:** View all reviews (filterable by restaurant), track response rates, reply to customers, edit/delete replies, and flag inappropriate content.
+- ✅ **Review Management:** View all reviews (filterable by restaurant), track response rates, reply to customers, edit/delete replies, and flag inappropriate content.
 - ✅ General user restaurant suggestions (minimal details).
 
 ---
@@ -302,6 +302,7 @@ Authorization: Bearer <your-jwt-token>
 - **Method:** `GET`
 - **Route:** `/reviews`
 - **Auth:** Required (Vendor/Admin)
+- **Query Parameters:** `restaurantId` (Optional: Filters reviews to a specific restaurant)
 - **Description:** Fetches all reviews, including nested `response` and `flags` data, and basic user info.
 - **Response Example:**
 
@@ -324,6 +325,7 @@ Authorization: Bearer <your-jwt-token>
 - **Method:** `GET`
 - **Route:** `/reviews/statistics`
 - **Auth:** Required (Vendor/Admin)
+- **Query Parameters:** `restaurantId` (Optional: Calculates stats for a specific restaurant only)
 - **Description:** Calculates dashboard metrics for the vendor.
 - **Response Example:**
 
@@ -364,6 +366,27 @@ Authorization: Bearer <your-jwt-token>
 ```
 
 - **Success Response:** `201 Created` with the new `ReviewFlag` object (status defaults to `PENDING`).
+
+#### 5. Edit a Reply
+- **Method:** `PUT`
+- **Route:** `/reviews/replies/:replyId`
+- **Auth:** Required (Vendor/Admin)
+- **Description:** Updates the text of an existing vendor reply.
+- **Request Body:**
+```json
+{
+  "responseText": "Updated reply text with new information."
+}
+```
+- **Success Response:** `200 OK` with the new `ReviewResponse` object.
+
+#### 6. Delete a Reply
+- **Method:** `DELETE`
+- **Route:** `/reviews/replies/:replyId`
+- **Auth:** Required (Vendor/Admin)
+- **Description:** Permanently removes a vendor's reply to a review.
+- **Request Body:**
+- **Success Response:** `200 OK` with `{ "success": true, "message": "Reply deleted successfully" }`
 
 ---
 
@@ -507,7 +530,7 @@ backend/
 │   ├── restaurantRoutes.js
 │   └── reviewRoutes.js  # ⭐ NEW: Review management APIs
 ├── prisma/              # Schema.prisma & migrations
-│   └── seed-merged.js   # ⭐ NEW: Test data seeder
+│   └── seed-simple.js   # ⭐ Realistic test data seeder
 ├── middleware/          # Auth guards (if needed locally)
 ├── .env                 # Environment variables
 └── server.js            # App entry point
