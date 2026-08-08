@@ -24,7 +24,7 @@ This subsystem handles **Vendor Profile, Restaurant Management, and Review Inter
 - ✅ Vendor profile management with auto-calculated completion metrics.
 - ✅ Restaurant CRUD operations with strict duplicate prevention.
 - ✅ Business verification workflow.
-- ✅ **Review Management:** View all reviews, track response rates, reply to customers, and flag inappropriate content.
+- ✅ - ✅ **Review Management:** View all reviews (filterable by restaurant), track response rates, reply to customers, edit/delete replies, and flag inappropriate content.
 - ✅ General user restaurant suggestions (minimal details).
 
 ---
@@ -475,8 +475,8 @@ npm install
 # 4. Sync database schema
 npx prisma db push
 
-# 5. (Optional) Seed test data (Vendor, Restaurant, Reviews)
-node prisma/seed-merged.js
+# 5. Seed the database with realistic test data (Vendors, Restaurants, and randomized Reviews)
+node prisma/seed-simple.js
 
 # 6. Start server
 npm run dev
