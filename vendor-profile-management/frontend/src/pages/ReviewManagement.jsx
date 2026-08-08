@@ -11,13 +11,26 @@ export default function ReviewManagement() {
   const [editText, setEditText] = useState('');
   const [sortBy, setSortBy] = useState('newest'); // newest, oldest, highest, lowest
   const [filterBy, setFilterBy] = useState('all'); // all, answered, unanswered
-  const [restaurantFilter, setRestaurantFilter] = useState('all');  
+  const [restaurantFilter, setRestaurantFilter] = useState('all');
+  const [restaurants, setRestaurants] = useState([]);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { 
+  loadRestaurants();
+  loadData(); 
+}, []);
+
+// New function to load restaurants
+const loadRestaurants = async () => {
+  try {
+    const res = await api.get('/restaurants'); // Fetch all restaurants
+    setRestaurants(res.data);
+  } catch (error) {
+    console.error("Failed to load restaurants", error);
+  }
+};
 
 const loadData = async () => {
   try {
-    // Pass the restaurantId as a query parameter if it's not 'all'
     const params = restaurantFilter !== 'all' ? { params: { restaurantId: restaurantFilter } } : {};
     
     const [reviewsRes, statsRes] = await Promise.all([
@@ -127,13 +140,16 @@ const loadData = async () => {
   </div>
 
   {/* NEW: Restaurant Filter Dropdown */}
-  <div className="flex items-center gap-2">
-    <select value={restaurantFilter} onChange={(e) => setRestaurantFilter(e.target.value)} className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
-      <option value="all">All Restaurants</option>
-      {/* You can hardcode your test restaurants here for now */}
-      <option value="test-restaurant-001">Test Bistro</option> 
-    </select>
-  </div>
+    <div className="flex items-center gap-2">
+        <select value={restaurantFilter} onChange={(e) => setRestaurantFilter(e.target.value)} className="bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white">
+            <option value="all">All Restaurants</option>
+            {restaurants.map((restaurant) => (
+            <option key={restaurant.id} value={restaurant.id}>
+                {restaurant.name}
+            </option>
+            ))}
+        </select>
+    </div>
 </div>
 
       <div className="space-y-4">
