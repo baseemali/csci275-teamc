@@ -9,15 +9,21 @@ export default function ReviewManagement() {
   const [replyingTo, setReplyingTo] = useState(null);
   const [editingReply, setEditingReply] = useState(null);
   const [editText, setEditText] = useState('');
-  const [sortBy, setSortBy] = useState('newest'); // newest, oldest, highest, lowest
-  const [filterBy, setFilterBy] = useState('all'); // all, answered, unanswered
-  const [restaurantFilter, setRestaurantFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  const [filterBy, setFilterBy] = useState('all');
   const [restaurants, setRestaurants] = useState([]);
+  const [restaurantFilter, setRestaurantFilter] = useState('all'); // ✅ Make sure this exists
 
+  // Initial load
   useEffect(() => { 
-  loadRestaurants();
-  loadData(); 
-}, []);
+    loadRestaurants();
+    loadData(); 
+  }, []);
+
+  // ✅ Reload when filters change
+  useEffect(() => {
+    loadData();
+  }, [restaurantFilter, sortBy, filterBy]);
 
 // New function to load restaurants
 const loadRestaurants = async () => {
@@ -31,12 +37,18 @@ const loadRestaurants = async () => {
 
 const loadData = async () => {
   try {
-    const params = restaurantFilter !== 'all' ? { params: { restaurantId: restaurantFilter } } : {};
+    // Build the query parameters
+    const params = {};
+    if (restaurantFilter !== 'all') {
+      params.restaurantId = restaurantFilter;
+    }
     
+    // Pass the SAME params to both requests
     const [reviewsRes, statsRes] = await Promise.all([
-      api.get('/reviews', params), 
-      api.get('/reviews/statistics')
+      api.get('/reviews', { params }), 
+      api.get('/reviews/statistics', { params }) // <-- Added { params } here
     ]);
+    
     setReviews(reviewsRes.data);
     setStats(statsRes.data);
   } catch (error) { console.error("Failed to load data", error); }

@@ -3,20 +3,22 @@ const router = express.Router();
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
+// GET all reviews
 router.get('/', async (req, res) => {
   try {
-    const { restaurantId } = req.query; // Get restaurantId from URL
-
-    // Build the where clause dynamically
-    const whereClause = restaurantId ? { restaurantId } : {};
+    const { restaurantId } = req.query;
+    const whereClause = {};
+    if (restaurantId && restaurantId !== 'all') {
+      whereClause.restaurantId = restaurantId;
+    }
 
     const reviews = await prisma.review.findMany({
-      where: whereClause, // Apply filter if restaurantId is provided
+      where: whereClause,
       include: {
         response: true,
         flags: true,
         user: { select: { name: true, email: true } },
-        restaurant: { select: { name: true } } // Include restaurant name
+        restaurant: { select: { name: true } }
       },
       orderBy: { createdAt: 'desc' }
     });
@@ -27,25 +29,40 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET statistics
 router.get('/statistics', async (req, res) => {
   try {
-    const reviews = await prisma.review.findMany({ include: { response: true } });
+    const { restaurantId } = req.query;
+    const whereClause = {};
+    if (restaurantId && restaurantId !== 'all') {
+      whereClause.restaurantId = restaurantId;
+    }
+
+    const reviews = await prisma.review.findMany({ 
+      where: whereClause,
+      include: { response: true } 
+    });
+    
     const totalReviews = reviews.length;
     const totalResponses = reviews.filter(r => r.response !== null).length;
     const unansweredReviews = totalReviews - totalResponses;
+    
     const averageRating = totalReviews > 0 
       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1) 
-      : 0;
+      : '0';
+      
     const responseRate = totalReviews > 0 
       ? ((totalResponses / totalReviews) * 100).toFixed(0) 
-      : 0;
+      : '0';
 
     res.json({ totalReviews, totalResponses, unansweredReviews, averageRating, responseRate });
   } catch (error) {
+    console.error('Stats error:', error);
     res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 });
 
+// POST reply
 router.post('/:reviewId/reply', async (req, res) => {
   try {
     const { reviewId } = req.params;
@@ -62,22 +79,7 @@ router.post('/:reviewId/reply', async (req, res) => {
   }
 });
 
-router.post('/:reviewId/flag', async (req, res) => {
-  try {
-    const { reviewId } = req.params;
-    const { reason } = req.body;
-    const vendorId = req.user?.id || 'test-user-001';
-
-    const newFlag = await prisma.reviewFlag.create({
-      data: { reviewId, vendorId, reason: reason || 'Inappropriate', status: 'PENDING' }
-    });
-    res.status(201).json(newFlag);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to flag review' });
-  }
-});
-
-// PUT: Edit a reply
+// PUT edit reply
 router.put('/replies/:replyId', async (req, res) => {
   try {
     const { replyId } = req.params;
@@ -93,7 +95,7 @@ router.put('/replies/:replyId', async (req, res) => {
   }
 });
 
-// DELETE: Delete a reply
+// DELETE reply
 router.delete('/replies/:replyId', async (req, res) => {
   try {
     const { replyId } = req.params;
@@ -104,4 +106,21 @@ router.delete('/replies/:replyId', async (req, res) => {
     res.status(500).json({ error: 'Failed to delete reply' });
   }
 });
+
+// POST flag
+router.post('/:reviewId/flag', async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const { reason } = req.body;
+    const vendorId = req.user?.id || 'test-user-001';
+
+    const newFlag = await prisma.reviewFlag.create({
+      data: { reviewId, vendorId, reason: reason || 'Inappropriate', status: 'PENDING' }
+    });
+    res.status(201).json(newFlag);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to flag review' });
+  }
+});
+
 module.exports = router;
