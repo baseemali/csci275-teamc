@@ -13,10 +13,8 @@ const app = express();
 //app.use(cors());
 app.use(cors({
   origin: [
-    'http://localhost:5173',                              // local dev
-    'http://localhost:5000',                              // local backend self-calls
-    'https://restaurant-review.mobobyte.workers.dev',                    // your Pages domain (update if different)
-    /^https:\/\/.*\.pages\.dev$/,                         // allow any preview deployments too
+    'http://localhost:5173',
+    /^https:\/\/.*\.onrender\.com$/,   // allows frontend + backend Render URLs
   ],
   credentials: true
 }));
