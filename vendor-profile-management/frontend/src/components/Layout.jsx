@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { LayoutDashboard, UtensilsCrossed, FileText, Settings, Bell, Search, LogOut, User, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, UtensilsCrossed, FileText, Settings, Bell, Search, LogOut, User, MessageSquare, Menu, X } from 'lucide-react';
 import { searchRestaurants } from '../services/api';
 
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  // ── Mobile sidebar state ──────────────────────────────
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const TEAM_A_LOGIN_URL = "http://localhost:3000/login";
 
@@ -20,14 +23,17 @@ export default function Layout() {
 
   const urlSearch = searchParams.get('search') || '';
 
-  // ✅ Sync the topbar input with the URL ?search= param.
-  // When "Clear" is pressed on My Restaurants, the param is removed
-  // and this effect clears the input automatically.
+  // Sync the topbar input with the URL ?search= param
   useEffect(() => {
     setSearchQuery(urlSearch);
   }, [urlSearch]);
 
-  // Debounced live search (waits 300ms after typing stops)
+  // Close sidebar automatically when the route changes (mobile UX)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Debounced live search
   useEffect(() => {
     const q = searchQuery.trim();
     latestQueryRef.current = q;
@@ -56,7 +62,7 @@ export default function Layout() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Close dropdown when clicking outside
+  // Close search dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -82,18 +88,42 @@ export default function Layout() {
     { path: '/', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/vendor-profile', label: 'My Profile', icon: User },
     { path: '/restaurant', label: 'My Restaurants', icon: UtensilsCrossed },
-    { path: '/reviews', label: 'Manage Reviews', icon: MessageSquare }, // ADDED THIS LINE
+    { path: '/reviews', label: 'Manage Reviews', icon: MessageSquare },
     { path: '/verification', label: 'Verification', icon: FileText },
     { path: '/settings', label: 'Settings', icon: Settings },
   ];
 
   return (
-    <div className="flex h-screen bg-gray-900 text-white">
+    <div className="flex h-screen bg-gray-900 text-white overflow-hidden">
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
-        <div className="p-6 text-2xl font-bold text-yellow-500 flex items-center gap-2">
-          <UtensilsCrossed /> Foodie Vendor
+      <aside className={`
+        w-64 bg-gray-900 border-r border-gray-800 flex flex-col
+        fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0 lg:static lg:z-auto
+      `}>
+        {/* Sidebar header with mobile close button */}
+        <div className="p-6 text-2xl font-bold text-yellow-500 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UtensilsCrossed /> Foodie Vendor
+          </div>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden text-gray-400 hover:text-white"
+            aria-label="Close menu"
+          >
+            <X size={24} />
+          </button>
         </div>
+
         <nav className="flex-1 px-4 space-y-2 mt-4">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -102,6 +132,7 @@ export default function Layout() {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive ? 'bg-yellow-500 text-gray-900 font-semibold' : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                 }`}
@@ -126,12 +157,22 @@ export default function Layout() {
 
       {/* Main Content & Topbar */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-8">
-          <h2 className="text-xl font-semibold">Welcome, Vendor </h2>
+        <header className="h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 lg:px-8">
+          <div className="flex items-center gap-3">
+            {/* Hamburger menu button (mobile only) */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden text-gray-400 hover:text-white"
+              aria-label="Open menu"
+            >
+              <Menu size={24} />
+            </button>
+            <h2 className="text-base lg:text-xl font-semibold truncate">Welcome, Vendor</h2>
+          </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 lg:gap-6">
             {/* Search bar */}
-            <div className="relative" ref={searchRef}>
+            <div className="relative hidden sm:block" ref={searchRef}>
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
               <input
                 type="text"
@@ -140,7 +181,7 @@ export default function Layout() {
                 onFocus={() => searchQuery.trim() && setShowResults(true)}
                 onKeyDown={(e) => e.key === 'Enter' && goToSearchResults()}
                 placeholder="Search restaurants..."
-                className="bg-gray-800 text-white pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-yellow-500 w-64"
+                className="bg-gray-800 text-white pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-yellow-500 w-40 lg:w-64"
               />
 
               {/* Live results dropdown */}
@@ -188,7 +229,7 @@ export default function Layout() {
 
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-full bg-yellow-500 flex items-center justify-center text-gray-900 font-bold">V</div>
-              <div>
+              <div className="hidden md:block">
                 <p className="text-sm font-medium">Vendor Admin</p>
                 <p className="text-xs text-gray-500">Owner</p>
               </div>
@@ -196,7 +237,7 @@ export default function Layout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8 bg-gray-900">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8 bg-gray-900">
           <Outlet />
         </main>
       </div>

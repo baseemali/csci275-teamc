@@ -57,14 +57,14 @@ export default function ReviewManagement() {
     try {
       await api.post(`/reviews/${reviewId}/reply`, { responseText: replyText });
       setReplyingTo(null); setReplyText(''); setReplyTemplate(''); loadData();
-    } catch (error) { alert("Failed to submit reply"); }
+    } catch (error) { toast.error("Failed to submit reply"); }
   };
 
   const handleEditReply = async (replyId) => {
     try {
       await api.put(`/reviews/replies/${replyId}`, { responseText: editText });
       setEditingReply(null); setEditText(''); loadData();
-    } catch (error) { alert("Failed to edit reply"); }
+    } catch (error) { toast.error("Failed to edit reply"); }
   };
 
   const handleDeleteReply = async (replyId) => {
@@ -72,14 +72,14 @@ export default function ReviewManagement() {
     try {
       await api.delete(`/reviews/replies/${replyId}`);
       loadData();
-    } catch (error) { alert("Failed to delete reply"); }
+    } catch (error) { toast.error("Failed to delete reply"); }
   };
 
   const handleFlag = async (reviewId) => {
     try {
       await api.post(`/reviews/${reviewId}/flag`, { reason: "Inappropriate content" });
-      alert("Review flagged successfully!"); loadData();
-    } catch (error) { alert("Failed to flag review"); }
+      toast.success("Review flagged successfully!"); loadData();
+    } catch (error) { toast.error("Failed to flag review"); }
   };
 
   // Helper function for sentiment badges

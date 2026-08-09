@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Bell, Mail, MessageSquare, Save } from 'lucide-react';
 import { getTestVendor, getVendorSettings, updateVendorSettings } from '../services/api';
+import toast from 'react-hot-toast';
 
 const DEFAULT_SETTINGS = {
   emailAlerts: true,
@@ -69,16 +70,16 @@ export default function Settings() {
 
   const handleSave = async () => {
     if (!vendorId) {
-      alert('⚠️ Vendor not loaded yet. Please try again.');
+      toast.error('Vendor not loaded yet. Please try again.');
       return;
     }
     try {
       setSaving(true);
       await updateVendorSettings(vendorId, settings);
-      alert('✅ Notification settings updated!');
+      toast.success('Notification settings updated!');
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('❌ Failed to save settings. Please check your connection.');
+      toast.error('Failed to save settings. Please check your connection.');
     } finally {
       setSaving(false);
     }

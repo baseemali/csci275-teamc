@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus, X, Pencil, Save, MapPin, Store, Search } from 'lucide-react';
 import { getTestVendor, getVendorRestaurants, createRestaurant, updateRestaurantProfile } from '../services/api';
+import toast from 'react-hot-toast';
+import Skeleton from '../components/Skeleton';
 
 // Cuisine options for the dropdown
 const CUISINE_TYPES = [
@@ -122,11 +124,12 @@ export default function RestaurantProfile() {
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      toast.error('Please fix the form errors before saving');
       return;
     }
 
     if (!vendorId && !isEditing) {
-      alert("⚠️ Cannot save: Vendor ID is missing!");
+      toast.error('Cannot save: Vendor ID is missing!');
       return;
     }
 
@@ -141,28 +144,56 @@ export default function RestaurantProfile() {
       if (isEditing && editingId) {
         response = await updateRestaurantProfile(editingId, payload);
         setRestaurants(restaurants.map(r => r.id === editingId ? response.data : r));
-        alert("✅ Restaurant updated successfully!");
+        toast.success('Restaurant updated successfully!');
       } else {
         payload.vendorId = vendorId;
         response = await createRestaurant(payload);
         setRestaurants([...restaurants, response.data]);
-        alert("✅ Restaurant saved successfully!");
+        toast.success('Restaurant saved successfully!');
       }
 
       resetForm();
     } catch (error) {
       console.error("❌ Error saving:", error);
       if (error.response && error.response.status === 409) {
-        alert("⚠️ Duplicate Restaurant: A restaurant with this name and address already exists!");
+        toast.error('Duplicate: A restaurant with this name and address already exists!');
       } else if (error.response && error.response.status === 400) {
-        alert(`⚠️ ${error.response.data?.error || 'Please check your input.'}`);
+        toast.error(error.response.data?.error || 'Please check your input.');
       } else {
-        alert("❌ Error saving to database. Please check your connection.");
+        toast.error('Error saving to database. Please check your connection.');
       }
     }
   };
 
-  if (loading) return <div className="text-center p-8 text-gray-400">Loading restaurants...</div>;
+  if (loading) {
+  return (
+    <div className="space-y-6">
+      {/* Header skeleton */}
+      <div className="flex justify-between items-center">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-10 w-36 rounded-md" />
+      </div>
+
+      {/* Restaurant cards skeleton */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+            <div className="flex justify-between mb-2">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-8 w-8 rounded-full" />
+            </div>
+            <Skeleton className="h-4 w-48 mb-3" />
+            <Skeleton className="h-4 w-40 mb-4" />
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-6 w-20 rounded-full" />
+              <Skeleton className="h-6 w-12" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
   const inputClass = "mt-1 block w-full bg-gray-800 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition";
 

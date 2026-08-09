@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Skeleton from '../components/Skeleton';
 import {
   Store, Star, MessageSquare, TrendingUp,
   ShieldCheck, ShieldAlert, AlertCircle, UtensilsCrossed
@@ -12,6 +13,7 @@ import {
   getVendorReviews,
   getVendorReviewStats,
 } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 // Fallback: compute stats from raw reviews if the stats endpoint is unavailable
 const computeStatsFromReviews = (reviewList) => {
@@ -30,20 +32,24 @@ const computeStatsFromReviews = (reviewList) => {
   };
 };
 
-const StatCard = ({ icon: Icon, label, value, sub, accent }) => (
-  <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+const StatCard = ({ icon: Icon, label, value, sub, accent, onClick }) => (
+  <button
+    onClick={onClick}
+    className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg text-left w-full transition-all hover:border-yellow-500 hover:shadow-yellow-500/10 hover:-translate-y-0.5 cursor-pointer group"
+  >
     <div className="flex items-center justify-between mb-3">
-      <p className="text-gray-400 text-sm font-medium">{label}</p>
+      <p className="text-gray-400 text-sm font-medium group-hover:text-gray-300 transition-colors">{label}</p>
       <div className={`p-2 rounded-lg ${accent}`}>
         <Icon size={18} />
       </div>
     </div>
     <p className="text-3xl font-bold text-white">{value}</p>
-    {sub && <p className="text-gray-500 text-xs mt-1">{sub}</p>}
-  </div>
+    {sub && <p className="text-gray-500 text-xs mt-1 group-hover:text-gray-400 transition-colors">{sub}</p>}
+  </button>
 );
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [vendor, setVendor] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -90,7 +96,60 @@ export default function Dashboard() {
     loadData();
   }, []);
 
-  if (loading) return <div className="text-center p-8 text-gray-400">Loading dashboard...</div>;
+  if (loading) {
+  return (
+    <div className="space-y-6">
+      {/* Header skeleton */}
+      <div className="flex justify-between items-center">
+        <div>
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-10 w-40 rounded-full" />
+      </div>
+
+      {/* Stat cards skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+            <div className="flex justify-between mb-3">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-9 w-9 rounded-lg" />
+            </div>
+            <Skeleton className="h-8 w-16 mb-2" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        ))}
+      </div>
+
+      {/* Chart + Recent reviews skeleton */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+          <Skeleton className="h-6 w-40 mb-4" />
+          <Skeleton className="h-[250px] w-full" />
+        </div>
+        <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+          <Skeleton className="h-6 w-32 mb-4" />
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-20 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Restaurants strip skeleton */}
+      <div className="bg-gray-800 p-6 rounded-xl border border-gray-700">
+        <Skeleton className="h-6 w-40 mb-4" />
+        <div className="flex flex-wrap gap-3">
+          {[...Array(5)].map((_, i) => (
+            <Skeleton key={i} className="h-10 w-40 rounded-lg" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
   if (error) {
     return (
@@ -139,6 +198,7 @@ export default function Dashboard() {
           value={restaurants.length}
           sub={`${claimedCount} claimed`}
           accent="bg-yellow-500/20 text-yellow-500"
+          onClick={() => navigate('/restaurant')}
         />
         <StatCard
           icon={Star}
@@ -146,6 +206,7 @@ export default function Dashboard() {
           value={stats ? Number(stats.averageRating).toFixed(1) : '—'}
           sub={stats ? 'out of 5.0' : 'No review data yet'}
           accent="bg-emerald-500/20 text-emerald-500"
+          onClick={() => navigate('/reviews')}
         />
         <StatCard
           icon={MessageSquare}
@@ -153,6 +214,7 @@ export default function Dashboard() {
           value={stats ? stats.totalReviews : '—'}
           sub={stats ? `${stats.responseRate ?? 0}% response rate` : 'No review data yet'}
           accent="bg-blue-500/20 text-blue-500"
+          onClick={() => navigate('/reviews')}
         />
         <StatCard
           icon={TrendingUp}
@@ -160,6 +222,7 @@ export default function Dashboard() {
           value={`${profileCompletion}%`}
           sub={profileCompletion >= 100 ? 'Fully complete! 🎉' : 'Keep building your profile'}
           accent="bg-purple-500/20 text-purple-500"
+          onClick={() => navigate('/vendor-profile')}
         />
       </div>
 
@@ -223,9 +286,10 @@ export default function Dashboard() {
         {restaurants.length > 0 ? (
           <div className="flex flex-wrap gap-3">
             {restaurants.map((rest) => (
-              <div
+              <button
                 key={rest.id}
-                className="flex items-center gap-2 bg-gray-900/60 border border-gray-700 px-4 py-2 rounded-lg"
+                onClick={() => navigate('/restaurant')}
+                className="flex items-center gap-2 bg-gray-900/60 border border-gray-700 px-4 py-2 rounded-lg hover:border-yellow-500 hover:bg-gray-800 transition-all"
               >
                 <UtensilsCrossed size={16} className="text-yellow-500" />
                 <span className="text-gray-200 text-sm font-medium">{rest.name}</span>
@@ -236,7 +300,7 @@ export default function Dashboard() {
                 }`}>
                   {rest.isClaimed ? 'Claimed' : 'Unclaimed'}
                 </span>
-              </div>
+              </button>
             ))}
           </div>
         ) : (

@@ -6,6 +6,7 @@ import {
   getRestaurantVerifications,
   submitVerification,
 } from '../services/api';
+import toast from 'react-hot-toast';
 
 const STATUS_CONFIG = {
   PENDING: {
@@ -76,23 +77,24 @@ export default function Verification() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Single validation check at the top
     if (!selectedRestaurantId) {
-      alert('⚠️ Please select a restaurant first.');
+      toast.error('Please select a restaurant first.');
       return;
     }
 
     try {
       setSubmitting(true);
       const res = await submitVerification(selectedRestaurantId, { documentUrl: docUrl });
-      // Prepend the new submission to the history
       setVerifications([res.data, ...verifications]);
       setDocUrl('');
-      alert('✅ Verification submitted for review!');
+      toast.success('Verification submitted for review!');
     } catch (error) {
       console.error('Error submitting verification:', error);
-      alert('❌ Failed to submit verification. Please check your connection.');
+      toast.error('Failed to submit verification. Please check your connection.');
     } finally {
-      setSubmitting(false);
+      setSubmitting(false);  // ← Critical! Re-enables the button after success OR failure
     }
   };
 
