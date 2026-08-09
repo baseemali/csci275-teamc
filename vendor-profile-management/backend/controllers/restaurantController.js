@@ -9,7 +9,7 @@ exports.createRestaurant = async (req, res) => {
   try {
     console.log("📥 Received restaurant data from frontend:", req.body);
     
-    const { vendorId, name, street, city, zipcode, phone, email, cuisine, priceLevel } = req.body;
+    const { vendorId, name, street, city, zipcode, phone, email, cuisine, priceLevel, logoUrl, coverUrl } = req.body;
     
     if (!vendorId || !name || !street || !city || !zipcode) {
       console.log("⚠️ Validation failed: Missing required fields");
@@ -52,7 +52,7 @@ exports.createRestaurant = async (req, res) => {
     // ----------------------------------------
 
     const restaurant = await prisma.restaurant.create({
-      data: { vendorId, name, street, city, zipcode, phone, email, cuisine, priceLevel }
+      data: { vendorId, name, street, city, zipcode, phone, email, cuisine, priceLevel, logoUrl, coverUrl }
     });
     
     console.log("✅ SUCCESS: Restaurant saved to database with ID:", restaurant.id);

@@ -23,7 +23,8 @@ export default function VendorProfile() {
     businessEmail: '',
     website: '',
     registrationNumber: '',
-    registeredAddress: ''
+    registeredAddress: '',
+    logoUrl: ''
   });
 
   // Weighted completion calculation
@@ -62,7 +63,8 @@ export default function VendorProfile() {
           businessEmail: response.data.businessEmail || '',
           website: response.data.website || '',
           registrationNumber: response.data.registrationNumber || '',
-          registeredAddress: response.data.registeredAddress || ''
+          registeredAddress: response.data.registeredAddress || '',
+          logoUrl: response.data.logoUrl || ''
         };
 
         // Check for draft in localStorage
@@ -272,6 +274,28 @@ export default function VendorProfile() {
                   className="w-full bg-gray-900 border border-gray-700 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition"
                   placeholder="Business license or Tax ID"
                 />
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-300 mb-1">Business Logo URL</label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="url"
+                  name="logoUrl"
+                  value={formData.logoUrl}
+                  onChange={handleChange}
+                  className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-yellow-500"
+                  placeholder="https://.../logo.png"
+                />
+                {formData.logoUrl && (
+                  <img
+                    src={formData.logoUrl}
+                    alt="Logo preview"
+                    className="h-12 w-12 object-cover rounded-lg border border-gray-700"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    onLoad={(e) => { e.currentTarget.style.display = 'block'; }}
+                  />
+                )}
               </div>
             </div>
           </div>

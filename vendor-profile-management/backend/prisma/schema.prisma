@@ -33,8 +33,9 @@ model Vendor {
   profileCompletion   Int                 @default(0)
   registeredAddress   String?
   registrationNumber  String?
-  updatedAt           DateTime            @updatedAt
   website             String?
+  logoUrl             String?              
+  updatedAt           DateTime            @updatedAt
   restaurants         Restaurant[]
   user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   notifications       VendorNotification?
@@ -53,6 +54,8 @@ model Restaurant {
   cuisine       String
   priceLevel    Int
   isClaimed     Boolean                @default(false)
+  logoUrl       String?                // 👈 ADD THIS
+  coverUrl      String?                // 👈 ADD THIS
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
   verifications BusinessVerification[]

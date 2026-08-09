@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import Skeleton from '../components/Skeleton';
 import {
-  Store, Star, MessageSquare, TrendingUp,
-  ShieldCheck, ShieldAlert, AlertCircle, UtensilsCrossed
-} from 'lucide-react';
-import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts';
 import {
@@ -14,6 +10,11 @@ import {
   getVendorReviewStats,
 } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import {
+  Store, Star, MessageSquare, TrendingUp,
+  ShieldCheck, ShieldAlert, AlertCircle, UtensilsCrossed,
+  CheckCircle, ArrowRight  
+} from 'lucide-react';
 
 // Fallback: compute stats from raw reviews if the stats endpoint is unavailable
 const computeStatsFromReviews = (reviewList) => {
@@ -47,6 +48,47 @@ const StatCard = ({ icon: Icon, label, value, sub, accent, onClick }) => (
     {sub && <p className="text-gray-500 text-xs mt-1 group-hover:text-gray-400 transition-colors">{sub}</p>}
   </button>
 );
+
+// Get initials from a name for the avatar
+const getInitials = (name) => {
+  if (!name) return 'C';
+  return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
+};
+
+// Sentiment color based on rating
+const getSentiment = (rating) => {
+  if (rating >= 4) return { border: 'border-l-emerald-500' };
+  if (rating === 3) return { border: 'border-l-yellow-500' };
+  return { border: 'border-l-red-500' };
+};
+
+// Relative time ("2 days ago")
+const timeAgo = (dateString) => {
+  if (!dateString) return '';
+  const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
+  const intervals = [
+    { label: 'year', seconds: 31536000 },
+    { label: 'month', seconds: 2592000 },
+    { label: 'week', seconds: 604800 },
+    { label: 'day', seconds: 86400 },
+    { label: 'hour', seconds: 3600 },
+    { label: 'minute', seconds: 60 },
+  ];
+  for (const { label, seconds: s } of intervals) {
+    const count = Math.floor(seconds / s);
+    if (count >= 1) return `${count} ${label}${count > 1 ? 's' : ''} ago`;
+  }
+  return 'just now';
+};
+
+// Gradient palette for avatars
+const avatarGradients = [
+  'from-yellow-400 to-orange-500',
+  'from-emerald-400 to-teal-500',
+  'from-blue-400 to-indigo-500',
+  'from-purple-400 to-pink-500',
+  'from-red-400 to-rose-500',
+];
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -250,27 +292,78 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* Recent Reviews — real data */}
+        {/* Recent Reviews — premium feed design */}
         <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
-          <h3 className="text-lg font-semibold text-white mb-4">Recent Reviews</h3>
+          {/* Header with View All link */}
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-white">Recent Reviews</h3>
+            <button
+              onClick={() => navigate('/reviews')}
+              className="text-yellow-500 hover:text-yellow-400 text-sm font-medium flex items-center gap-1 transition"
+            >
+              View all <ArrowRight size={14} />
+            </button>
+          </div>
+
           {reviews.length > 0 ? (
-            <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2">
-              {reviews.slice(0, 5).map((review) => (
-                <div key={review.id} className="bg-gray-900/60 p-4 rounded-lg border border-gray-700">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-yellow-500 font-semibold">
-                      {'★'.repeat(review.rating)}
-                      <span className="text-gray-600">{'★'.repeat(5 - review.rating)}</span>
-                    </span>
-                    <span className="text-gray-500 text-xs">
-                      {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}
-                    </span>
+            <div className="space-y-3 max-h-[320px] overflow-y-auto pr-2">
+              {reviews.slice(0, 5).map((review, idx) => {
+                const sentiment = getSentiment(review.rating);
+                const avatarGradient = avatarGradients[idx % avatarGradients.length];
+                return (
+                  <div
+                    key={review.id}
+                    className={`bg-gray-900/60 rounded-lg border border-gray-700 border-l-4 ${sentiment.border} p-4 hover:bg-gray-900 transition-colors`}
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Avatar */}
+                      <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${avatarGradient} flex items-center justify-center text-gray-900 font-bold text-sm shrink-0`}>
+                        {getInitials(review.user?.name)}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        {/* Name + time */}
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-white text-sm font-semibold truncate">
+                            {review.user?.name || 'Customer'}
+                          </p>
+                          <span className="text-gray-500 text-xs whitespace-nowrap">
+                            {timeAgo(review.createdAt)}
+                          </span>
+                        </div>
+
+                        {/* Stars + restaurant badge */}
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className="text-yellow-500 text-xs">
+                            {'★'.repeat(review.rating)}
+                            <span className="text-gray-600">{'★'.repeat(5 - review.rating)}</span>
+                          </span>
+                          {review.restaurant?.name && (
+                            <span className="inline-flex items-center gap-1 bg-gray-800 text-gray-400 text-[10px] px-1.5 py-0.5 rounded">
+                              <UtensilsCrossed size={9} />
+                              {review.restaurant.name}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Comment */}
+                        <p className="text-gray-300 text-sm mt-2 line-clamp-2">
+                          {review.comment || review.text || review.content || 'No comment provided.'}
+                        </p>
+
+                        {/* Replied indicator */}
+                        {review.response && (
+                          <div className="flex items-center gap-1 mt-2 text-emerald-400 text-xs font-medium">
+                            <CheckCircle size={12} />
+                            <span>You replied</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-gray-300 text-sm">
-                    {review.comment || review.text || review.content || 'No comment provided.'}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="h-[250px] flex items-center justify-center text-gray-500 text-sm">
