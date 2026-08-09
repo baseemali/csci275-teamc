@@ -247,12 +247,12 @@ export default function RestaurantProfile() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Phone</label>
-                <input name="phone" value={formData.phone} onChange={handleChange} placeholder="(604) 555-0123" className={inputClass} />
+                <label className="block text-sm font-medium text-gray-300 mb-1">Phone *</label>
+                <input name="phone" value={formData.phone} onChange={handleChange} required placeholder="(604) 555-0123" className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
-                <input name="email" type="email" value={formData.email} onChange={handleChange} placeholder="contact@restaurant.com" className={inputClass} />
+                <label className="block text-sm font-medium text-gray-300 mb-1">Email *</label>
+                <input name="email" type="email" value={formData.email} onChange={handleChange} required placeholder="contact@restaurant.com" className={inputClass} />
               </div>
             </div>
 
