@@ -52,6 +52,7 @@ export const getRestaurantProfile = (id) => API.get(`/restaurants/${id}`);
 export const updateRestaurantProfile = (id, data) => API.put(`/restaurants/${id}`, data);
 export const getRestaurantVerifications = (id) => API.get(`/restaurants/${id}/verifications`);
 export const submitVerification = (id, data) => API.post(`/restaurants/${id}/verification`, data);
+export const getPublicRestaurantProfile = (id) => API.get(`/restaurants/public/${id}`);
 
 // ==========================================
 // REVIEW APIs (matches backend/routes/reviewRoutes.js)
@@ -72,5 +73,17 @@ export const getClaimedRestaurants = (vendorId) => API.get('/restaurants/claimed
 
 // NEW: General User Suggestion API
 export const suggestRestaurant = (data) => API.post('/restaurants/suggest', data);
+
+// ==========================================
+// MENU APIs
+// ==========================================
+export const getRestaurantMenu = (restaurantId) => API.get(`/restaurants/${restaurantId}/menu`);
+export const createMenuItem = (restaurantId, data) => API.post(`/restaurants/${restaurantId}/menu`, data);
+export const updateMenuItem = (restaurantId, itemId, data) => API.put(`/restaurants/${restaurantId}/menu/${itemId}`, data);
+export const deleteMenuItem = (restaurantId, itemId) => API.delete(`/restaurants/${restaurantId}/menu/${itemId}`);
+
+// Hours API
+export const getRestaurantHours = (id) => API.get(`/restaurants/${id}/hours`);
+export const saveRestaurantHours = (id, hours) => API.put(`/restaurants/${id}/hours`, { hours });
 
 export default API;

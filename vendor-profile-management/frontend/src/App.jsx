@@ -8,6 +8,8 @@ import Verification from './pages/Verification';
 import Settings from './pages/Settings';
 import ReviewManagement from './pages/ReviewManagement';
 import ApiTester from './pages/ApiTester';
+import RestaurantMenu from './pages/RestaurantMenu';
+import PublicRestaurantProfile from './pages/PublicRestaurantProfile';
 
 const TEAM_A_LOGIN_URL = "http://localhost:3000/login";
 
@@ -57,6 +59,8 @@ function App() {
           </div>
         } />
 
+        <Route path="/restaurant/:id/view" element={<PublicRestaurantProfile />} />
+
         <Route path="/" element={
           <ProtectedRoute>
             <Layout />
@@ -65,6 +69,7 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="vendor-profile" element={<VendorProfile />} />
           <Route path="restaurant" element={<RestaurantProfile />} />
+          <Route path="restaurant/:id/menu" element={<RestaurantMenu />} />
           <Route path="reviews" element={<ReviewManagement />} />
           <Route path="verification" element={<Verification />} />
           <Route path="settings" element={<Settings />} />

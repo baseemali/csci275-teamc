@@ -63,15 +63,19 @@ model Restaurant {
   hours         RestaurantHours[]
   tags          RestaurantTag[]
   reviews       Review[]
+  menu         MenuItem[]
 }
 
 model RestaurantHours {
   id           String     @id @default(uuid())
   restaurantId String
   day          String
-  openTime     String
-  closeTime    String
+  openTime     String?
+  closeTime    String?
+  isClosed     Boolean    @default(false)
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, day])
 }
 
 model RestaurantTag {
@@ -131,4 +135,19 @@ model ReviewFlag {
   createdAt DateTime @default(now())
   review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   vendor    User?    @relation(fields: [vendorId], references: [id])
+}
+
+model MenuItem {
+  id           String     @id @default(uuid())
+  restaurantId String
+  name         String
+  description  String?
+  price        Float
+  category     String     @default("Main Course")
+  imageUrl     String?
+  isAvailable  Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }

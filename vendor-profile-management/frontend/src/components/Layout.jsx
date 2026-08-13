@@ -61,6 +61,24 @@ export default function Layout() {
   useEffect(() => { setSearchQuery(urlSearch); }, [urlSearch]);
   useEffect(() => { setSidebarOpen(false); }, [location.pathname]);
 
+  // Update browser tab title per page
+  useEffect(() => {
+    const titles = {
+      '/': 'Dashboard',
+      '/vendor-profile': 'My Profile',
+      '/restaurant': 'My Restaurants',
+      '/reviews': 'Review Management',
+      '/verification': 'Verification',
+      '/settings': 'Settings',
+      '/api-tester': 'API Tester',
+    };
+
+    let page = titles[location.pathname];
+    if (!page && location.pathname.includes('/menu')) page = 'Manage Menu';
+
+    document.title = `${page || 'Dashboard'} · ForkRank`;
+  }, [location.pathname]);
+
   useEffect(() => {
     const q = searchQuery.trim();
     latestQueryRef.current = q;

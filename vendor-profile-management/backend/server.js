@@ -6,6 +6,8 @@ const cors = require('cors');
 const vendorRoutes = require('./routes/vendorRoutes');
 const restaurantRoutes = require('./routes/restaurantRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
+const menuRoutes = require('./routes/menuRoutes');
+const hoursRoutes = require('./routes/hoursRoutes');
 
 const app = express();
 
@@ -24,6 +26,8 @@ app.use(express.json());
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/restaurants/:restaurantId/menu', menuRoutes);
+app.use('/api/restaurants/:restaurantId/hours', hoursRoutes);
 
 // Health Check Route
 app.get('/', (req, res) => {

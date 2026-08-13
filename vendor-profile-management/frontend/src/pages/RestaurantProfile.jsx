@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
   Plus, Pencil, Trash2, X, MapPin, Phone, Mail,
   Star, MessageSquare, ShieldCheck, ShieldAlert, Clock,
-  UtensilsCrossed, Search, Filter, ChevronDown
+  UtensilsCrossed, Search, Filter, ChevronDown, BookOpen, Eye
 } from 'lucide-react';
 import {
   getTestVendor,
@@ -12,6 +12,7 @@ import {
   createRestaurant,
   updateRestaurantProfile,
 } from '../services/api';
+import HoursModal from '../components/HoursModal';
 
 const CUISINES = [
   'Italian', 'Japanese', 'Chinese', 'Indian', 'Mexican',
@@ -108,11 +109,14 @@ const initialFormData = {
   logoUrl: '', coverUrl: ''
 };
 
+
 export default function RestaurantProfile() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [vendorId, setVendorId] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [hoursRestaurantId, setHoursRestaurantId] = useState(null);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -450,15 +454,45 @@ function RestaurantAvatar({ rest }) {
                   )}
                 </div>
 
-                {/* Action */}
-                <div className="mt-auto pt-3 border-t border-gray-700">
-                  <button
-                    onClick={() => openEditModal(rest)}
-                    className="w-full flex items-center justify-center gap-1.5 bg-gray-700 text-white text-sm py-2.5 rounded-lg hover:bg-gray-600 transition font-medium"
-                  >
-                    <Pencil size={14} />
-                    Edit Restaurant
-                  </button>
+                {/* Actions — unified icon-only buttons */}
+                <div className="mt-auto pt-4 border-t border-gray-700 flex items-center justify-center">
+                  <div className="flex items-center gap-1.5">
+                    {/* View public profile */}
+                    <button
+                      onClick={() => navigate(`/restaurant/${rest.id}/view`)}
+                      title="View public profile"
+                      className="p-2.5 rounded-lg bg-gray-700/50 text-gray-400 border border-transparent hover:text-blue-400 hover:bg-blue-500/15 hover:border-blue-500/30 transition-all"
+                    >
+                      <Eye size={16} />
+                    </button>
+
+                    {/* Manage menu */}
+                    <button
+                      onClick={() => navigate(`/restaurant/${rest.id}/menu`)}
+                      title="Manage menu"
+                      className="p-2.5 rounded-lg bg-gray-700/50 text-gray-400 border border-transparent hover:text-yellow-400 hover:bg-yellow-500/15 hover:border-yellow-500/30 transition-all"
+                    >
+                      <BookOpen size={16} />
+                    </button>
+
+                    {/* Manage hours */}
+                    <button
+                      onClick={() => setHoursRestaurantId(rest.id)}
+                      title="Manage hours"
+                      className="p-2.5 rounded-lg bg-gray-700/50 text-gray-400 border border-transparent hover:text-emerald-400 hover:bg-emerald-500/15 hover:border-emerald-500/30 transition-all"
+                    >
+                      <Clock size={16} />
+                    </button>
+
+                    {/* Edit restaurant */}
+                    <button
+                      onClick={() => openEditModal(rest)}
+                      title="Edit restaurant"
+                      className="p-2.5 rounded-lg bg-gray-700/50 text-gray-400 border border-transparent hover:text-white hover:bg-gray-700 hover:border-gray-600 transition-all"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -705,6 +739,12 @@ function RestaurantAvatar({ rest }) {
             </form>
           </div>
         </div>
+      )}
+      {hoursRestaurantId && (
+        <HoursModal
+          restaurantId={hoursRestaurantId}
+          onClose={() => setHoursRestaurantId(null)}
+        />
       )}
     </div>
   );
