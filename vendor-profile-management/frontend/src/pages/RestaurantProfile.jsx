@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import {
   Plus, Pencil, Trash2, X, MapPin, Phone, Mail,
   Star, MessageSquare, ShieldCheck, ShieldAlert, Clock,
-  UtensilsCrossed, Search, Filter, ChevronDown, BookOpen, Eye
+  UtensilsCrossed, Search, Filter, ChevronDown, BookOpen, Eye, Sparkles
 } from 'lucide-react';
 import {
   getTestVendor,
@@ -13,6 +13,8 @@ import {
   updateRestaurantProfile,
 } from '../services/api';
 import HoursModal from '../components/HoursModal';
+import FeaturesModal from '../components/FeaturesModal';
+// add Sparkles to lucide-react import
 
 const CUISINES = [
   'Italian', 'Japanese', 'Chinese', 'Indian', 'Mexican',
@@ -124,6 +126,7 @@ export default function RestaurantProfile() {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [featuresRestaurantId, setFeaturesRestaurantId] = useState(null);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
@@ -492,6 +495,15 @@ function RestaurantAvatar({ rest }) {
                     >
                       <Pencil size={16} />
                     </button>
+
+                    {/* Features restaurant */}
+                    <button
+                      onClick={() => setFeaturesRestaurantId(rest.id)}
+                      title="Manage features"
+                      className="p-2.5 rounded-lg bg-gray-700/50 text-gray-400 border border-transparent hover:text-purple-400 hover:bg-purple-500/15 hover:border-purple-500/30 transition-all"
+                    >
+                      <Sparkles size={16} />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -744,6 +756,13 @@ function RestaurantAvatar({ rest }) {
         <HoursModal
           restaurantId={hoursRestaurantId}
           onClose={() => setHoursRestaurantId(null)}
+        />
+      )}
+
+      {featuresRestaurantId && (
+        <FeaturesModal
+          restaurantId={featuresRestaurantId}
+          onClose={() => setFeaturesRestaurantId(null)}
         />
       )}
     </div>

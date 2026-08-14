@@ -86,4 +86,13 @@ export const deleteMenuItem = (restaurantId, itemId) => API.delete(`/restaurants
 export const getRestaurantHours = (id) => API.get(`/restaurants/${id}/hours`);
 export const saveRestaurantHours = (id, hours) => API.put(`/restaurants/${id}/hours`, { hours });
 
+
+// ==========================================
+// TAGS / FEATURES APIs
+// ==========================================
+export const getRestaurantTags = (restaurantId) => API.get(`/restaurants/${restaurantId}/tags`);
+export const createRestaurantTag = (restaurantId, name) => API.post(`/restaurants/${restaurantId}/tags`, { name });
+export const deleteRestaurantTag = (restaurantId, tagId) => API.delete(`/restaurants/${restaurantId}/tags/${tagId}`);
+
+
 export default API;

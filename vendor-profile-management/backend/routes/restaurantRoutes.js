@@ -83,7 +83,24 @@ router.get('/public/:id', async (req, res) => {
       }))
     };
 
-    res.json({ restaurant, reviewStats });
+    // Calculate city rank (position by avg rating among restaurants in same city)
+    const cityRestaurants = await prisma.restaurant.findMany({
+      where: { city: restaurant.city },
+      include: { reviews: { select: { rating: true } } },
+    });
+
+    const withAverages = cityRestaurants.map((r) => {
+      const avg = r.reviews.length > 0
+        ? r.reviews.reduce((s, x) => s + x.rating, 0) / r.reviews.length
+        : 0;
+      return { id: r.id, avg };
+    });
+
+    withAverages.sort((a, b) => b.avg - a.avg);
+    const rankPosition = withAverages.findIndex((r) => r.id === restaurant.id) + 1;
+    const cityRank = { rank: rankPosition, total: withAverages.length };
+
+    res.json({ restaurant, reviewStats, cityRank });
   } catch (error) {
     console.error('Error fetching public restaurant:', error);
     res.status(500).json({ error: 'Failed to fetch restaurant' });

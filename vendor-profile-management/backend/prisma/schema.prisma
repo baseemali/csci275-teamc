@@ -81,8 +81,13 @@ model RestaurantHours {
 model RestaurantTag {
   id           String     @id @default(uuid())
   restaurantId String
-  tagName      String
+  name         String
+  createdAt    DateTime   @default(now())
+  
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  // Prevents adding the exact same feature twice for one restaurant
+  @@unique([restaurantId, name]) 
 }
 
 model BusinessVerification {
