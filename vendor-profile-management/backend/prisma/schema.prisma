@@ -52,10 +52,11 @@ model Restaurant {
   phone         String
   email         String
   cuisine       String
+  website       String?
   priceLevel    Int
   isClaimed     Boolean                @default(false)
-  logoUrl       String?                // 👈 ADD THIS
-  coverUrl      String?                // 👈 ADD THIS
+  logoUrl       String?                
+  coverUrl      String?                
   createdAt     DateTime               @default(now())
   updatedAt     DateTime               @updatedAt
   verifications BusinessVerification[]
